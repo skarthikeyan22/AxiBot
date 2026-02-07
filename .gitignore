@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# YouTube API
+client_secret.json
+token.json
+storage/token.json
+storage/cache.json
+.storage/cache.json
+
+# Streamlabs
+socket_token.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

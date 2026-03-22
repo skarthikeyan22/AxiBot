@@ -1,5 +1,6 @@
 import asyncio
 import time
+import collections
 from app.settings import settings
 from app.moderation_filter import ModerationFilter
 
@@ -10,6 +11,7 @@ class MessageRouter:
         self.bot_name = settings.BOT_NAME.lower()
         self.cooldowns = {}
         self.COOLDOWN_SECONDS = 60
+        self.chat_history = collections.deque(maxlen=15)
 
 
 
@@ -108,35 +110,45 @@ class MessageRouter:
             return
 
         # 1. Mention Detection
-        # Check if the message contains the bot name (case-insensitive)
         user_lower = user.lower() if user else ""
         message_lower = message.lower()
         
         print(f"[Router Parse] User: {user}, Message: {message}")
         
-        if f"@{self.bot_name}" not in message_lower and self.bot_name not in message_lower:
-            print(f"[Router Ignore] Message does not mention @{self.bot_name}")
-            return
+        is_mentioned = False
+        if f"@{self.bot_name}" in message_lower or self.bot_name in message_lower:
+            is_mentioned = True
+            print(f"[{user}] explicitly mentioned bot: {message}")
 
-        print(f"[{user}] mentioned bot: {message}")
+        # 2. Append to chat history
+        self.chat_history.append(f"{user}: {message}")
 
-        # 2. Cooldown Check
+        # 3. Cooldown Check
         if self._is_on_cooldown(user):
-            print(f"User {user} is on cooldown.")
+            if is_mentioned:
+                print(f"User {user} is on cooldown.")
             return
 
-        # 3. Gemini AI Generation
+        # 4. Context-Aware AI Generation
         if self.gemini_client:
-            print("Generating reply...")
-            reply = await self.gemini_client.generate_reply(user, message)
+            print("Evaluating message for context-aware reply...")
+            history_str = "\n".join(self.chat_history)
             
-            if reply:
-                print(f"Bot Reply: {reply}")
-                # 4. Send to YouTube
+            reply = await self.gemini_client.generate_reply(user, message, history=history_str, is_mentioned=is_mentioned)
+            
+            if reply and "IGNORE_CHAT" not in reply:
+                print(f"Bot Context-Aware Reply: {reply}")
+                
+                # Append bot output to memory so it remembers its own replies
+                self.chat_history.append(f"{self.bot_name}: {reply}")
+
                 if self.youtube_client:
                     self.youtube_client.send_message(reply)
                 else:
                     print("YouTube Client not connected, cannot send reply.")
+            else:
+                # Bot decided not to intervene
+                pass
 
     def _is_on_cooldown(self, user: str) -> bool:
         now = time.time()

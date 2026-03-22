@@ -7,6 +7,9 @@ AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Nvidia Ope
 ## ✨ Features
 
 - **🧠 High-Performance Intelligence**: Uses NVIDIA's API to run top-tier open-source models (like Gemma 3) with extremely low latency.
+- **🗣️ Context-Aware & Multi-lingual**: 
+    - **Organic Interception**: Maintains a rolling chat history and intelligently decides when to jump in and help viewers without needing to be literally mentioned via `@AxiBot`.
+    - **Native Tongue Matching**: Automatically detects the viewer's language (e.g., Tamil, English, Tanglish) and emotional state, replying with perfectly matched modulations and empathy.
 - **🎯 Auto-Updating Goals**:
     - **Like Target**: Automatically sets a goal (starts at 10). When hit, it celebrates and sets the next goal (+10).
     - **Subscriber Target**: Tracks your sub count. When you get a new sub (hitting the "Next 10" milestone), it celebrates and updates the target.

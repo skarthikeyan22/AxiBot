@@ -19,10 +19,10 @@ class NvidiaClient:
         ]
         print(f"initialized NvidiaClient with model: {self.model_name}")
 
-    async def generate_reply(self, user: str, message: str) -> str:
+    async def generate_reply(self, user: str, message: str, history: str = "", is_mentioned: bool = False) -> str:
         """
         Generates a friendly, short reply.
-        Handles Rate Limits (429) by returning a fallback message.
+        Handles context-aware dynamic jumping into chat.
         """
         context_str = ""
         if self.stream_context:
@@ -30,13 +30,23 @@ class NvidiaClient:
             channel = self.stream_context.get("channel_title", "Unknown Channel")
             context_str = f"You are watching the stream '{title}' on channel '{channel}'. "
 
+        intervention_rules = (
+            "You MUST reply. " if is_mentioned else 
+            "Read the chat history. If the user is asking a question or genuinely needs help, reply. Otherwise, if they are just chatting generally, strictly output exactly the text: IGNORE_CHAT"
+        )
+
         prompt = (
-            f"You are {settings.BOT_NAME}, a friendly and helpful YouTube live stream moderator bot. "
-            f"{context_str}"
-            "Keep your replies very short (under 200 characters). "
-            "IMPORTANT: Limit emojis to max 1. Do not reuse the same emoji. "
-            "Do not use URLs. Be casual and enthusiastic. "
-            f"The viewer '{user}' said: '{message}'"
+            f"You are {settings.BOT_NAME}, an empathetic, friendly, human-like YouTube live stream moderator. "
+            f"{context_str}\n"
+            "CRITICAL RULES:\n"
+            "1. Detect the user's language (Tamil, Tanglish, English, etc.) and reply in the EXACT SAME language and modulation.\n"
+            "2. Catch their emotions. Be friendly, helpful, and natural. Limit emojis to max 1.\n"
+            "3. Keep replies very short (under 200 characters). Do not use URLs.\n"
+            f"4. {intervention_rules}\n"
+            "---\n"
+            f"Recent Chat History:\n{history}\n"
+            "---\n"
+            f"Latest Message from '{user}': '{message}'\n"
         )
 
         try:

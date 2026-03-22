@@ -13,12 +13,20 @@ async def test_nvidia_api():
         client = NvidiaClient()
         print(f"Successfully loaded client for model: {client.model_name}")
         
-        print("\n--- 1. Testing Chat Completion ---")
-        reply = await client.generate_reply("TestUser", "Hello bot! Give me a random fun fact about space.")
-        if reply:
-            print(f"✅ Bot Output: {reply}")
-        else:
-            print("❌ Failed to get a reply.")
+        print("\n--- 1. Testing Context-Aware Chat ---")
+        history = "UserA: What's up guys?\nUserB: Nm, just watching the stream."
+        
+        print("Test A: User just chatting (should ignore)")
+        reply_a = await client.generate_reply("UserC", "lol true", history=history, is_mentioned=False)
+        print(f"Bot Output: {reply_a}")
+
+        print("\nTest B: User asks a question in Tanglish (should reply in Tanglish)")
+        reply_b = await client.generate_reply("UserD", "bro indha game per enna?", history=history, is_mentioned=False)
+        print(f"Bot Output: {reply_b}")
+        
+        print("\nTest C: User explicitly mentions bot")
+        reply_c = await client.generate_reply("UserE", "Hello @AxiBot!", history=history, is_mentioned=True)
+        print(f"Bot Output: {reply_c}")
             
         print("\n--- 2. Testing Engagement Message ---")
         engagement = await client.generate_engagement_message("like_subscribe")

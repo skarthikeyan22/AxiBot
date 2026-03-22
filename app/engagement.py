@@ -19,7 +19,7 @@ class EngagementManager:
         
         # Viewer tracking
         self.last_viewer_count = 0
-        self.viewer_spike_threshold = 5
+        self.viewer_spike_threshold = 8
         
         # Target Tracking
         self.like_target = 10
@@ -66,8 +66,8 @@ class EngagementManager:
         self.last_viewer_count = current_viewer_count
         
         if trigger:
-            # Enforce a smaller rate limit for triggers (e.g., don't spam if 2 triggers in 1 min)
-            if time.time() - self.last_message_time > 60:
+            # Enforce a smaller rate limit for triggers (e.g., don't spam if 2 triggers in 5 mins)
+            if time.time() - self.last_message_time > 300:
                 msg = await self._generate_message(category="welcome" if trigger else None)
                 self.last_message_time = time.time()
                 # Push back the periodic message timer

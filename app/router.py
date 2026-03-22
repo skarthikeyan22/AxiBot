@@ -3,15 +3,20 @@ import time
 import collections
 from app.settings import settings
 from app.moderation_filter import ModerationFilter
+from app.database import DatabaseManager
 
 class MessageRouter:
     def __init__(self, gemini_client=None, youtube_client=None):
         self.gemini_client = gemini_client
         self.youtube_client = youtube_client
+        self.db = DatabaseManager()
         self.bot_name = settings.BOT_NAME.lower()
         self.cooldowns = {}
         self.COOLDOWN_SECONDS = 60
         self.chat_history = collections.deque(maxlen=15)
+        
+        # Per-user recent history for summarization (6 messages trigger)
+        self.user_session_history = collections.defaultdict(lambda: collections.deque(maxlen=6))
 
 
 
@@ -87,8 +92,22 @@ class MessageRouter:
             is_mentioned = True
             print(f"[{user}] explicitly mentioned bot: {message}")
 
-        # 2. Append to chat history
-        self.chat_history.append(f"{user}: {message}")
+        # 2. Database Tracking & Memory Fetch
+        user_memory = "New viewer, treat them with extra warmth!"
+        if user_id:
+            # Update activity (last seen, count)
+            self.db.update_user_activity(user_id, user)
+            
+            # Fetch existing memory
+            user_data = self.db.get_user(user_id)
+            if user_data:
+                user_memory = user_data["personality_summary"]
+            
+            # Add to session history for summarization trigger
+            self.user_session_history[user_id].append(message)
+            if len(self.user_session_history[user_id]) >= 6:
+                # Trigger background summarization
+                asyncio.create_task(self._summarize_user(user_id, user))
 
         # 3. Append to chat history (Listen to everything)
         self.chat_history.append(f"{user}: {message}")
@@ -98,7 +117,14 @@ class MessageRouter:
             print(f"Evaluating message from {user} for context-aware reply...")
             history_str = "\n".join(self.chat_history)
             
-            reply = await self.gemini_client.generate_reply(user, message, history=history_str, is_mentioned=is_mentioned)
+            # Injecting User Memory into the generation
+            reply = await self.gemini_client.generate_reply(
+                user, 
+                message, 
+                history=history_str, 
+                is_mentioned=is_mentioned,
+                user_memory=user_memory
+            )
             
             if reply and "IGNORE_CHAT" not in reply:
                 # 5. Cooldown Check (Only enforced if AI decides to speak)
@@ -118,6 +144,38 @@ class MessageRouter:
             else:
                 # Bot decided not to intervene
                 pass
+
+    async def _summarize_user(self, user_id: str, display_name: str):
+        """
+        Uses AI to UPDATE a brief personality summary based on the last 6 messages.
+        It fetches the OLD summary and merges it with the NEW history.
+        """
+        # Fetch current memory
+        old_summary = "No previous history."
+        user_data = self.db.get_user(user_id)
+        if user_data:
+            old_summary = user_data["personality_summary"]
+
+        history = list(self.user_session_history[user_id])
+        # Clear the buffer after grabbing
+        self.user_session_history[user_id].clear()
+        
+        print(f"--- Iterative Personality Update for {display_name} ---")
+        
+        prompt = (
+            f"Existing Summary for '{display_name}': {old_summary}\n\n"
+            f"New Messages from '{display_name}':\n" + "\n".join(history) + "\n\n"
+            "Combine the existing summary with these new messages to create an updated 1-sentence personality summary. "
+            "Keep it brief (under 150 chars). Do not lose important facts like their location or favorite game."
+        )
+        
+        try:
+            summary = await self.gemini_client.generate_custom_prompt(prompt)
+            if summary:
+                print(f"Updated Summary for {display_name}: {summary}")
+                self.db.update_personality(user_id, summary)
+        except Exception as e:
+            print(f"Error during iterative summarization for {display_name}: {e}")
 
     def _is_on_cooldown(self, user: str) -> bool:
         now = time.time()

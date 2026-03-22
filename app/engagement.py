@@ -7,11 +7,11 @@ class EngagementManager:
     def __init__(self, llm_client=None):
         self.llm_client = llm_client
         self.fallback_messages = [
-            "Don't forget to Hit the LIKE & SUBSCRIBE Button! 👍🔔",
-            "Let's go for 10 Likes! Smash that button! 🚀",
-            "Enjoying the stream? Consider subscribing for more! 💖",
-            "New here? Say hi in the chat! 👋",
-            "If you are enjoying the content, please like and subscribe! It helps a lot! 🙏"
+            "Don't forget to Hit the LIKE & SUBSCRIBE Button!",
+            "Let's go for 10 Likes! Smash that button!",
+            "Enjoying the stream? Consider subscribing for more!",
+            "New here? Say hi in the chat!",
+            "If you are enjoying the content, please like and subscribe! It helps a lot!"
         ]
         self.last_message_time = 0
         self.next_message_time = 0 
@@ -92,7 +92,7 @@ class EngagementManager:
             if msg:
                 return f"{msg} (New Goal: {self.like_target} Likes!)"
             else:
-                 return f"We hit {old_target} Likes! 🎉 New Goal: {self.like_target} Likes! Smash it! 🚀"
+                 return f"We hit {old_target} Likes! New Goal: {self.like_target} Likes! Smash it!"
 
         # Check Sub Target
         if current_subs > 0: # Ensure valid sub count
@@ -109,7 +109,7 @@ class EngagementManager:
                 if msg:
                     return f"{msg} (Next Goal: {self.sub_target} Subs)"
                 else:
-                    return f"We hit the sub goal! 🎉 Next Target: {self.sub_target} Subscribers! Welcome new subs! 🌟"
+                    return f"We hit the sub goal! Next Target: {self.sub_target} Subscribers! Welcome new subs!"
                     
         return None
 

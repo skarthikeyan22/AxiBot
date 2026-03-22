@@ -6,20 +6,23 @@ AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Nvidia Ope
 
 ## ✨ Features
 
-- **🧠 High-Performance Intelligence**: Uses NVIDIA's API to run top-tier open-source models (like Gemma 3) with extremely low latency.
-- **🗣️ Context-Aware & Multi-lingual**: 
-    - **Organic Interception**: Maintains a rolling chat history and intelligently decides when to jump in and help viewers without needing to be literally mentioned via `@AxiBot`.
-    - **Native Tongue Matching**: Automatically detects the viewer's language (e.g., Tamil, English, Tanglish) and emotional state, replying with perfectly matched modulations and empathy.
+- **🧠 High-Performance Intelligence**: Uses NVIDIA's NIM API to run top-tier open-source models (like Gemma 3 or Gemma 2) with extremely low latency.
+- **💾 Iterative User Memory (SQLite)**: 
+    - **Long-term Recognition**: Stores a unique personality summary for every viewer in a local SQLite database (`storage/axibot.db`).
+    - **Cumulative Learning**: Every 6 messages, it merges new conversation details with existing memories, building a deeper understanding of each viewer over time.
+    - **Self-Awareness**: Viewers can ask "Who am I?" or "Tell about me" to hear what the bot knows about them.
+- **🗣️ Smart Context & Interaction**: 
+    - **Strict Doubt Filtering**: Only intervenes if it detects a clear question, a doubt, or a request for help—ignoring casual chatter and greetings.
+    - **1:1 Language Matching**: Detects English, Tamil, or Tanglish and replies in the **exact same language**. No forced Tamil for English speakers.
+    - **Pro-Gamer Persona**: Adopt a friendly, informal "pro-gamer" moderator friend vibe with emotional empathy (happy for wins, supportive for losses).
 - **🎯 Auto-Updating Goals**:
     - **Like Target**: Automatically sets a goal (starts at 10). When hit, it celebrates and sets the next goal (+10).
-    - **Subscriber Target**: Tracks your sub count. When you get a new sub (hitting the "Next 10" milestone), it celebrates and updates the target.
+    - **Subscriber Target**: Tracks milestones and celebrates new sub goals (+10).
 - **📣 Smart Engagement**:
-    - **Dynamic Hype**: Generates unique, non-repeating "Like & Subscribe" reminders using AI.
-    - **Human-like Timing**: Posts messages at random intervals to feel natural.
-    - **Spike Detection**: Welcomes new viewers when traffic spikes.
-- **🛡️ Auto-Moderation**: Instantly deletes abusive messages and timeouts users (5 mins).
-- **🚫 Anti-Spam**: Enforces a 60-second cooldown per user.
-- **⚡ Optimized Quota**: Smart polling allows the bot to run for **8.5+ hours** continuously on the free YouTube quota.
+    - **Dynamic Hype**: Generates unique, low-emoji "Like & Subscribe" reminders using AI.
+    - **Spike Detection**: Welcomes new viewers when traffic spikes (threshold: 8).
+- **🛡️ Auto-Moderation**: Instantly deletes abusive messages and timeouts users.
+- **⚡ Optimized Quota**: Smart polling allows for **8.5+ hours** of continuous streaming on the free YouTube quota.
 
 ---
 

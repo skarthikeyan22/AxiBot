@@ -19,7 +19,7 @@ class NvidiaClient:
         ]
         print(f"initialized NvidiaClient with model: {self.model_name}")
 
-    async def generate_reply(self, user: str, message: str, history: str = "", is_mentioned: bool = False) -> str:
+    async def generate_reply(self, user: str, message: str, history: str = "", is_mentioned: bool = False, user_memory: str = "") -> str:
         """
         Generates a friendly, short reply.
         Handles context-aware dynamic jumping into chat.
@@ -32,19 +32,21 @@ class NvidiaClient:
 
         intervention_rules = (
             "You MUST reply now. " if is_mentioned else 
-            "Read the chat history. If the user is asking a question, needs help, or if joining the convo adds value, then reply. If they are just chatting generally or saying hi to each other, strictly output exactly: IGNORE_CHAT"
+            "Read the chat history. ONLY reply if the latest message is a clear question, a doubt, or a request for help. If it is just a greeting ('hi', 'hello'), a casual comment ('nice play', 'lol'), or a general conversation, you MUST strictly output exactly: IGNORE_CHAT. Do not be over-talkative."
         )
 
         prompt = (
             f"You are {settings.BOT_NAME}, not just a bot, but a friendly, pro-gamer moderator and streamer's best friend. "
             f"{context_str}\n"
             "SYSTEM INSTRUCTIONS:\n"
-            "1. LANGUAGE: Detect the user's language (Tamil, Tanglish, English). Reply in the EXACT SAME language and modulation. "
-            "If they use Tanglish (Tamil + English), you use Tanglish. Use local slang and informal 'pro-gamer' vibes.\n"
-            "2. EMOTION: Catch their vibe. If they are happy, celebrate! If frustrated, be supportive. Act like a human moderator.\n"
-            "3. STYLE: Keep replies very short (under 200 chars). Limit emojis to max 1. No URLs.\n"
-            f"4. INTERVENTION: {intervention_rules}\n"
-            "---\n"
+            "1. LANGUAGE: Match the user's language 1:1. If they chat in English, reply in English. If they use Tamil, use Tamil. "
+            "If they use Tanglish, you use Tanglish. DO NOT force Tamil if the user is speaking English.\n"
+            "2. VARIETY: Do NOT repeat the same phrases or prefixes (like 'Aiyyo!') in every message. Be natural and varied.\n"
+            "3. EMOTION: Catch their vibe. If they are happy, celebrate! If frustrated, be supportive. Act like a human moderator friend.\n"
+            "4. STYLE: Keep replies very short (under 200 chars). Avoid emojis unless absolutely necessary for the emotion. Use informal 'pro-gamer' vibes.\n"
+            "5. SELF-AWARENESS: If the user asks 'who am I?', 'tell about me', or 'do you remember me?', use the information in the 'User Profile Header' to give them a friendly, personal answer.\n"
+            f"6. INTERVENTION: {intervention_rules}\n"
+            f"User Profile Header: {user_memory}\n"
             f"Chat Memory (Last 15):\n{history}\n"
             "---\n"
             f"User '{user}' says: '{message}'\n"
@@ -78,12 +80,12 @@ class NvidiaClient:
         Generates a short, engaging message based on the category.
         """
         prompts = {
-            "like_subscribe": "Generate a short, fun message asking viewers to like the stream and subscribe to the channel. Be creative! Max 1 emoji.",
-            "likes_target": "Generate a short message setting a small likes goal (e.g., 10 or 20 likes) for the stream. Be encouraging! Max 1 emoji.",
-            "chat_with_me": "Generate a short message inviting viewers to chat with you (the bot). Ask them a simple question or just say you're ready to chat. Max 1 emoji.",
-            "welcome": "Generate a short, warm welcome message for new viewers joining the stream. Max 1 emoji.",
-            "like_target_met": "We hit the like goal! 🎉 Generate a short celebration message and set a new higher goal. Max 1 emoji.",
-            "sub_target_met": "We hit the subscriber goal! 🚀 Generate a short celebration message for the new subscriber and mention the next goal. Max 1 emoji."
+            "like_subscribe": "Generate a short, fun message asking viewers to like the stream and subscribe. Be creative! Avoid emojis unless necessary.",
+            "likes_target": "Generate a short message setting a small likes goal. Be encouraging! Avoid emojis unless necessary.",
+            "chat_with_me": "Generate a short message inviting viewers to chat. Ask a simple question or just say hi. Avoid emojis unless necessary.",
+            "welcome": "Generate a short, warm welcome message for new viewers. Avoid emojis unless necessary.",
+            "like_target_met": "We hit the like goal! Generate a short celebration message and set a new higher goal. Avoid emojis unless necessary.",
+            "sub_target_met": "We hit the subscriber goal! Generate a short celebration message for the new subscriber and mention the next goal. Avoid emojis unless necessary."
         }
         
         base_prompt = prompts.get(category, prompts["like_subscribe"])
@@ -106,6 +108,24 @@ class NvidiaClient:
             return None
         except Exception as e:
             # print(f"Nvidia Engagement Error: {e}")
+            return None
+
+    async def generate_custom_prompt(self, prompt: str) -> str:
+        """
+        Executes a raw prompt (used for summarization or internal tasks).
+        """
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.5,
+                max_tokens=200
+            )
+            if response.choices and response.choices[0].message.content:
+                return response.choices[0].message.content.strip()
+            return None
+        except Exception as e:
+            print(f"Nvidia Custom Prompt Error: {e}")
             return None
 
 

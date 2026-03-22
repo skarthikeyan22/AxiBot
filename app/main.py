@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.settings import settings
 from app.streamlabs_listener import StreamlabsListener
 from app.youtube_client import YouTubeClient
-from app.gemini_client import GeminiClient
 from app.router import MessageRouter
 
 async def main():
@@ -16,9 +15,8 @@ async def main():
     
     # 1. Initialize Clients
     print("Initializing clients...")
-    # gemini = GeminiClient()
-    from app.local_client import LocalGemmaClient
-    gemini = LocalGemmaClient(model_name="gemma2:2b")
+    from app.nvidia_client import NvidiaClient
+    gemini = NvidiaClient()
     
     youtube = YouTubeClient()
     

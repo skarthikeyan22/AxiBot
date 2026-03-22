@@ -1,18 +1,18 @@
-# 🤖 AxiBot - Local AI YouTube Moderator
+# 🤖 AxiBot - AI YouTube Moderator
 
-AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Local AI** (Google Gemma 2 via Ollama) or **Gemini**. It moderates chat, welcomes subscribers, engages viewers, and manages stream goals just like a human moderator—all optimized for minimal API usage.
+AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Nvidia Open-Source Models API** (e.g., Google Gemma 3). It moderates chat, welcomes subscribers, engages viewers, and manages stream goals just like a human moderator—all optimized for minimal YouTube API usage and blazing fast inference.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![Local AI](https://img.shields.io/badge/AI-Ollama-orange.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![AI API](https://img.shields.io/badge/AI-Nvidia_NIM-green.svg)
 
 ## ✨ Features
 
-- **🧠 Hybrid Intelligence**: Runs locally using **Gemma 2 (2B)** via Ollama or wirelessly via **Gemini 2.0 Flash**.
+- **🧠 High-Performance Intelligence**: Uses NVIDIA's API to run top-tier open-source models (like Gemma 3) with extremely low latency.
 - **🎯 Auto-Updating Goals**:
     - **Like Target**: Automatically sets a goal (starts at 10). When hit, it celebrates and sets the next goal (+10).
     - **Subscriber Target**: Tracks your sub count. When you get a new sub (hitting the "Next 10" milestone), it celebrates and updates the target.
 - **📣 Smart Engagement**:
     - **Dynamic Hype**: Generates unique, non-repeating "Like & Subscribe" reminders using AI.
-    - **Human-like Timing**: Posts messages at random intervals (5-15 mins) to feel natural.
+    - **Human-like Timing**: Posts messages at random intervals to feel natural.
     - **Spike Detection**: Welcomes new viewers when traffic spikes.
 - **🛡️ Auto-Moderation**: Instantly deletes abusive messages and timeouts users (5 mins).
 - **🚫 Anti-Spam**: Enforces a 60-second cooldown per user.
@@ -23,8 +23,7 @@ AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Local AI**
 ## 🛠️ Prerequisites
 
 1.  **Python 3.10+**: [Download Here](https://www.python.org/downloads/)
-2.  **Ollama** (Optional for Local AI): [Download Here](https://ollama.com/download)
-3.  **Google Gemini Key** (Optional for Cloud AI): [Get Key Here](https://aistudio.google.com/)
+2.  **Nvidia API Key**: [Get Key Here](https://build.nvidia.com/) (Required for AI generation)
 
 ---
 
@@ -40,14 +39,6 @@ AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Local AI**
     ```bash
     pip install -r requirements.txt
     ```
-
-3.  **Setup AI (Choose One)**
-    - **Option A: Local (Ollama)**
-        - Install Ollama.
-        - Run: `ollama pull gemma2:2b`
-        - Keep `ollama serve` running.
-    - **Option B: Cloud (Gemini)**
-        - Get an API key and add it to `.env`.
 
 ---
 
@@ -71,7 +62,8 @@ AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Local AI**
     YOUTUBE_TOKEN_PATH=storage/token.json
     STREAMER_CHANNEL_ID=UCxxxxxxxxxxxxxxxxx
     BOT_NAME=AxiBot
-    GEMINI_API_KEY=your_key_here (Optional)
+    NVIDIA_API_KEY=your_nvidia_api_key_here
+    NVIDIA_MODEL_ID=google/gemma-3-4b-it
     ```
 
 ---
@@ -80,7 +72,7 @@ AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Local AI**
 
 1.  **Start the Bot**
     ```powershell
-    python -m app.main
+    python app/main.py
     ```
 
 2.  **First Time Login**
@@ -97,12 +89,12 @@ AxiBot is a smart, privacy-focused YouTube Live Chat bot powered by **Local AI**
 
 - **Bad Words**: Edit `app/moderation_filter.py`.
 - **Engagement Settings**: Edit `app/engagement.py` to change message frequency or target increments.
-- **AI Personality**: Edit prompt templates in `app/local_client.py` or `app/gemini_client.py`.
+- **AI Personality**: Edit prompt templates in `app/nvidia_client.py`.
 
 ---
 
 ## ❓ Troubleshooting
 
 - **"Quota Exceeded"**: The bot is optimized for ~8.5 hours. If you stream longer, create a second project/credential.
-- **"Ollama Connection Error"**: Ensure `ollama serve` is running.
+- **"401 Unauthorized" or API Key Errors**: Ensure your `NVIDIA_API_KEY` is correct in `.env`.
 - **Bot replying to itself**: Ensure `BOT_NAME` in `.env` matches the bot's display name exactly.
